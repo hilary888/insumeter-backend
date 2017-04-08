@@ -5,12 +5,19 @@ from rest_framework.response import Response
 from rest_framework import status
 from insumeter.models import Log
 from insumeter.serializers import LogSerializer
-
+import datetime
 
 class LogList(APIView):
     """
     List all logs, or create a new entry
     """
+    def format_time_db(self, time_string):
+        time = "20" + time_string
+        time = time.replace('/', '-')
+        time = time.replace(',', ' ')
+        time = time[0:-3]
+        return time
+
     def get(self, request, format=None):
         logs = Log.objects.all()
         serializer = LogSerializer(logs, many=True)
@@ -18,11 +25,19 @@ class LogList(APIView):
 
     def post(self, request, format=None):
         serializer = LogSerializer(data=request.data)
+        time = request.data['timestamp']
+        print(time)
+        time = datetime.datetime.strptime(self.format_time_db(time),
+                    "%Y-%m-%d %H:%M:%S")
+        request.data['timestamp'] = time
+        print(request.data['timestamp'])
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         # TODO cannot post if base_id or sensor_id is non-existent. Is this ok?
+
+
 
 def current_datetime():
     """ () -> DateTime
@@ -45,7 +60,6 @@ def current_datetime():
 
 def index(request):
     return render(request, 'insumeter/index.html')
-
 
 def cur_time(request):
     cur_datetime = current_datetime()

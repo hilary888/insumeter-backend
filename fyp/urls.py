@@ -15,10 +15,8 @@ Including another URLconf
 """
 from django.conf.urls import url, include
 from django.contrib import admin
-from insumeter import views
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^insumeter/', include('insumeter.urls')),
-    url(r'^time/$', views.cur_time, name="current_time")
 ]
