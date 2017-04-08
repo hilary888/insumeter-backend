@@ -3,7 +3,7 @@ from django.utils import timezone
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from insumeter.models import Log
+from insumeter import models
 from insumeter.serializers import LogSerializer
 import datetime
 
@@ -19,7 +19,7 @@ class LogList(APIView):
         return time
 
     def get(self, request, format=None):
-        logs = Log.objects.all()
+        logs = models.Log.objects.all()
         serializer = LogSerializer(logs, many=True)
         return Response(serializer.data)
 
@@ -37,7 +37,13 @@ class LogList(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         # TODO cannot post if base_id or sensor_id is non-existent. Is this ok?
 
-
+class UserList(APIView):
+    """
+    List users, or create a new one
+    """
+    def get(self, request, format=None):
+        users = models.InsumeterUser.objects.all()
+        s
 
 def current_datetime():
     """ () -> DateTime
