@@ -1,11 +1,12 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.utils import timezone
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from insumeter import models
-from insumeter.serializers import LogSerializer
+from insumeter import serializers
 import datetime
+from django.http import Http404
 
 class LogList(APIView):
     """
@@ -20,11 +21,11 @@ class LogList(APIView):
 
     def get(self, request, format=None):
         logs = models.Log.objects.all()
-        serializer = LogSerializer(logs, many=True)
+        serializer = serializers.LogSerializer(logs, many=True)
         return Response(serializer.data)
 
     def post(self, request, format=None):
-        serializer = LogSerializer(data=request.data)
+        serializer = serializers.LogSerializer(data=request.data)
         time = request.data['timestamp']
         print(time)
         time = datetime.datetime.strptime(self.format_time_db(time),
@@ -37,13 +38,157 @@ class LogList(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         # TODO cannot post if base_id or sensor_id is non-existent. Is this ok?
 
+
+class UserLogs(APIView):
+    """
+    Lists the readings, timestamps, and power_level history of a user for all
+    sensors and base stations owned.
+    """
+    def get(self, request, user_id, format=None):
+        user_logs = models.Log.objects.filter(user=user_id)
+        serializer = serializers.LogSerializer(user_logs, many=True)
+        return Response(serializer.data)
+
+
 class UserList(APIView):
     """
     List users, or create a new one
     """
     def get(self, request, format=None):
         users = models.InsumeterUser.objects.all()
-        s
+        serializer = serializers.InsumeterUserSerializer(users, many=True)
+        return Response(serializer.data)
+
+    # TODO Figure out how to post new user via json.(if it's possible)
+    def post(self, request, format=None):
+        serializer = serializers.InsumeterUserSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+# TODO Really test the functions in UserDetail
+class UserDetail(APIView):
+    """
+    Retrieve, update, or delete
+    """
+    def get(self, request, pk, format=None):
+        user = get_object_or_404(models.InsumeterUser, id=pk)
+        serializer = serializers.InsumeterUserSerializer(user)
+        return Response(serializer.data)
+
+    def put(self, request, pk, format=None):
+        user = get_object_or_404(models.InsumeterUser, id=pk)
+        serializer = serializers.InsumeterUserSerializer(user, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, pk, format=None):
+        user = get_object_or_404(models.InsumeterUser, id=pk)
+        user.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class BaseStationList(APIView):
+    """
+    List base stations belonging to a user, or create one
+    """
+    def get_object(self, user_id):
+        try:
+            return models.BaseStation.objects.filter(user=user_id)
+        except models.BaseStation.DoesNotExist:
+            raise Http404
+
+    def get(self, request, user_id, format=None):
+        base_stations = self.get_object(user_id)
+        serializer = serializers.BaseStationSerializer(base_stations, many=True)
+        return Response(serializer.data)
+
+    def post(self, request, user_id, format=None):
+        # user is appended from endpoint
+        request.data['user'] = user_id
+        serializer = serializers.BaseStationSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class BaseStationDetail(APIView):
+    """
+    Retrieve, update, or delete a base station
+    """
+    # TODO add permission here, only admin can change base_id
+    def get(self, request, pk, format=None):
+        base_station = get_object_or_404(models.BaseStation, base_id=pk)
+        serializer = serializers.BaseStationSerializer(base_station)
+        return Response(serializer.data)
+
+    def put(self, request, pk, format=None):
+        base_station = get_object_or_404(models.BaseStation, base_id=pk)
+        serializer = serializers.BaseStationSerializer(base_station, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, pk, format=None):
+        base_station = get_object_or_404(models.BaseStation, base_id=pk)
+        base_station.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+class SensorList(APIView):
+    """
+    List all sensors assigned to a base station, or create one
+    """
+    # TODO permissions? Only user and admin shd be able to add sensors
+    def get_object(self, base_id):
+        try:
+            return models.Sensor.objects.filter(base_id=base_id)
+        except models.Sensor.DoesNotExist:
+            raise Http404
+
+    def get(self, request, base_id, format=None):
+        sensors = self.get_object(base_id)
+        serializer = serializers.SensorSerializer(sensors, many=True)
+        return Response(serializer.data)
+
+    def post(self, request, base_id, format=None):
+        request.data['base_id'] = base_id
+        serializer = serializers.SensorSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class SensorDetail(APIView):
+    """
+    Retrieve, update, or delete a sensor
+    """
+    def get(self, request, pk, format=None):
+        sensor = get_object_or_404(models.Sensor, sensor_id=pk)
+        serializer = serializers.SensorSerializer(sensor)
+        return Response(serializer.data)
+
+    def put(self, request, pk, format=None):
+        sensor = get_object_or_404(models.Sensor, sensor_id=pk)
+        serializer = serializers.SensorSerializer(sensor, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, pk, format=None):
+        sensor = get_object_or_404(models.Sensor, id=pk)
+        sensor.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+
 
 def current_datetime():
     """ () -> DateTime
