@@ -45,8 +45,16 @@ class UserLogs(APIView):
     """
     def get(self, request, user_id, format=None):
         logs = models.Log.objects.filter(sensor_id__base_id__user_id=user_id)
-        print(logs)
         serializer = serializers.LogSerializer(logs, many=True)
+        return Response(serializer.data)
+
+class UserSensors(APIView):
+    """
+    List all sensors belonging to a given user
+    """
+    def get(self, request, user_id, format=None):
+        sensors = models.Sensor.objects.filter(base_id__user_id=user_id)
+        serializer = serializers.SensorSerializer(sensors, many=True)
         return Response(serializer.data)
 
 
@@ -90,6 +98,7 @@ class UserDetail(APIView):
         user = get_object_or_404(models.InsumeterUser, id=pk)
         user.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
 
 
 class BaseStationList(APIView):
