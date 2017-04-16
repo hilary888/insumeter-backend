@@ -35,7 +35,7 @@ class BaseStation(models.Model):
 
 class Sensor(models.Model):
     sensor_id = models.CharField(primary_key=True, max_length=10, null=False, unique=True)
-    base_id = models.ForeignKey(BaseStation)
+    base_id = models.ForeignKey(BaseStation, related_name='sensor_set')
     nickname = models.CharField(max_length=100, null=True)
 
     def __str__(self):
@@ -48,7 +48,7 @@ class Sensor(models.Model):
 class Log(models.Model):
     timestamp = models.DateTimeField(auto_now_add=True)
     level_reading = models.DecimalField(null=False, decimal_places=2, max_digits=5)
-    base_station_id = models.ForeignKey(BaseStation)
+    base_id = models.ForeignKey(BaseStation)
     sensor_id = models.ForeignKey(Sensor)
     power_level = models.DecimalField(null=False, decimal_places=2, max_digits=5)
-    user = models.ForeignKey(InsumeterUser)
+    #user = models.ForeignKey(InsumeterUser)

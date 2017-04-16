@@ -41,12 +41,12 @@ class LogList(APIView):
 
 class UserLogs(APIView):
     """
-    Lists the readings, timestamps, and power_level history of a user for all
-    sensors and base stations owned.
+    Lists the logs related to a given user (identified by user_id)
     """
     def get(self, request, user_id, format=None):
-        user_logs = models.Log.objects.filter(user=user_id)
-        serializer = serializers.LogSerializer(user_logs, many=True)
+        logs = models.Log.objects.filter(sensor_id__base_id__user_id=user_id)
+        print(logs)
+        serializer = serializers.LogSerializer(logs, many=True)
         return Response(serializer.data)
 
 
