@@ -7,6 +7,8 @@ from insumeter import models
 from insumeter import serializers
 import datetime
 from django.http import Http404
+from rest_framework.permissions import IsAuthenticated
+from django.http import HttpResponse
 
 class LogList(APIView):
     """
@@ -19,6 +21,7 @@ class LogList(APIView):
         time = time[0:-3]
         return time
 
+    # maybe get isn't a good idea since no permission is required for post
     def get(self, request, format=None):
         logs = models.Log.objects.all()
         serializer = serializers.LogSerializer(logs, many=True)
@@ -34,8 +37,10 @@ class LogList(APIView):
         print(request.data['timestamp'])
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return HttpResponse("Success!")
+            #return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return HttpResponse("Failed!")
+        #return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         # TODO cannot post if base_id or sensor_id is non-existent. Is this ok?
 
 
@@ -43,6 +48,7 @@ class UserLogs(APIView):
     """
     Lists the logs related to a given user (identified by user_id)
     """
+    # TODO only authenticated
     def get(self, request, user_id, format=None):
         logs = models.Log.objects.filter(sensor_id__base_id__user_id=user_id)
         serializer = serializers.LogSerializer(logs, many=True)
@@ -62,12 +68,12 @@ class UserList(APIView):
     """
     List users, or create a new one
     """
+    # TODO maybe get shouldn't be here too
     def get(self, request, format=None):
         users = models.InsumeterUser.objects.all()
         serializer = serializers.InsumeterUserSerializer(users, many=True)
         return Response(serializer.data)
 
-    # TODO Figure out how to post new user via json.(if it's possible)
     def post(self, request, format=None):
         serializer = serializers.InsumeterUserSerializer(data=request.data)
         if serializer.is_valid():
@@ -76,11 +82,12 @@ class UserList(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-# TODO Really test the functions in UserDetail
+
 class UserDetail(APIView):
     """
     Retrieve, update, or delete
     """
+    # TODO only authenticated
     def get(self, request, pk, format=None):
         user = get_object_or_404(models.InsumeterUser, id=pk)
         serializer = serializers.InsumeterUserSerializer(user)
@@ -105,6 +112,7 @@ class BaseStationList(APIView):
     """
     List base stations belonging to a user, or create one
     """
+    # TODO only authenticated
     def get_object(self, user_id):
         try:
             return models.BaseStation.objects.filter(user=user_id)
@@ -178,6 +186,7 @@ class SensorDetail(APIView):
     """
     Retrieve, update, or delete a sensor
     """
+    # TODO only authenticated
     def get(self, request, pk, format=None):
         sensor = get_object_or_404(models.Sensor, sensor_id=pk)
         serializer = serializers.SensorSerializer(sensor)
@@ -217,11 +226,11 @@ def current_datetime():
     cur_datetime = cur_datetime.replace(' ', ',')
     return cur_datetime
 
-
-def index(request):
-    return render(request, 'insumeter/index.html')
-
 def cur_time(request):
     cur_datetime = current_datetime()
     context = {'time': cur_datetime}
     return render(request, 'insumeter/time.html', context)
+
+
+def index(request):
+    return render(request, 'insumeter/index.html')
