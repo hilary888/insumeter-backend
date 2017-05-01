@@ -105,7 +105,4 @@ wsgi.py
 
 # db file
 db.sqlite
-# db file
-db.sqlite
-# db file
-db.sqlite
+
