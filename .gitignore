@@ -99,3 +99,13 @@ ENV/
 
 # Rope project settings
 .ropeproject
+
+# wsgi conf file
+wsgi.py
+
+# db file
+db.sqlite
+# db file
+db.sqlite
+# db file
+db.sqlite
