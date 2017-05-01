@@ -6,7 +6,7 @@ from django.contrib.auth import get_user_model
 class LogSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Log
-        fields = ('base_id', 'sensor_id', 'power_level', 'level_reading', 'timestamp')
+        fields = ('base_station_id', 'sensor_id', 'power_level', 'level_reading', 'timestamp')
 
 
 class UserSerializer(serializers.ModelSerializer):

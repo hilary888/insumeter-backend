@@ -48,7 +48,7 @@ class Sensor(models.Model):
 class Log(models.Model):
     timestamp = models.DateTimeField(auto_now_add=True)
     level_reading = models.DecimalField(null=False, decimal_places=2, max_digits=5)
-    base_id = models.ForeignKey(BaseStation)
+    base_station_id = models.ForeignKey(BaseStation)
     sensor_id = models.ForeignKey(Sensor)
     power_level = models.DecimalField(null=False, decimal_places=2, max_digits=5)
     #user = models.ForeignKey(InsumeterUser)
