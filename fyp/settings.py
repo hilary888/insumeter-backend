@@ -25,12 +25,7 @@ SECRET_KEY = 'l=ev$tziq#+1jmay6wjt9uch(6spp-*#&c7z2&@yolr2ktx@5-'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-<<<<<<< Updated upstream
 ALLOWED_HOSTS = ['insumeter.herokuapp.com', 'localhost', 'hilaryk.pythonanywhere.com']
-=======
-ALLOWED_HOSTS = ['hilaryk.pythonanywhere.com', 'localhost',]
->>>>>>> Stashed changes
-
 
 # Application definition
 
