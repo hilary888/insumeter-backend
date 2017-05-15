@@ -40,3 +40,8 @@ class SensorSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Sensor
         fields = ('sensor_id', 'base_id', 'nickname')
+
+class TankHeightSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Sensor
+        fields = ('tank_height',)

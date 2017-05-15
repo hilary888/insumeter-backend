@@ -205,7 +205,16 @@ class SensorDetail(APIView):
 
 
 
+class TankHeight(APIView):
+    """
+    Retrieve the height of a given sensor's tank
+    """
+    def get(self, request, sensor_id, format=None):
+        sensor = get_object_or_404(models.Sensor, sensor_id=sensor_id)
+        serializer = serializers.TankHeightSerializer(sensor)
+        return Response(serializer.data)
 
+        
 def current_datetime():
     """ () -> DateTime
 

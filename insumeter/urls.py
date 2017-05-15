@@ -24,6 +24,8 @@ urlpatterns = [
     url(r'^user-sensors/(?P<user_id>[0-9]+)/$', views.UserSensors.as_view()),
     # insumeter/sensor/<sensor_id>/                     - details of a sensor
     url(r'^sensor/(?P<pk>S[0-9]+)/$', views.SensorDetail.as_view()),
+    # insumeter/get_tank_height/S123456789/
+    url(r'get_tank_height/(?P<sensor_id>S[0-9]+)/$', views.TankHeight.as_view()),
 ]
 
 urlpatterns = format_suffix_patterns(urlpatterns)

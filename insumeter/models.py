@@ -37,7 +37,8 @@ class Sensor(models.Model):
     sensor_id = models.CharField(primary_key=True, max_length=10, null=False, unique=True)
     base_id = models.ForeignKey(BaseStation, related_name='sensor_set')
     nickname = models.CharField(max_length=100, null=True)
-
+    tank_height = models.DecimalField(max_digits=5, decimal_places=2)
+    
     def __str__(self):
         return self.sensor_id
 
@@ -52,3 +53,6 @@ class Log(models.Model):
     sensor_id = models.ForeignKey(Sensor)
     power_level = models.DecimalField(null=False, decimal_places=2, max_digits=5)
     #user = models.ForeignKey(InsumeterUser)
+
+# use last power reading if power not Sent
+# use default timestamp
