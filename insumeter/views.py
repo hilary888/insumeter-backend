@@ -37,8 +37,10 @@ class LogList(APIView):
         print(request.data['timestamp'])
         if serializer.is_valid():
             serializer.save()
-            return HttpResponse("1")
-        return HttpResponse("0")
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            #return HttpResponse("1")
+        #return HttpResponse("0")
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         # TODO cannot post if base_id or sensor_id is non-existent. Is this ok?
 
 

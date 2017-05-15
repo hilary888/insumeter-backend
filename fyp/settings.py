@@ -27,7 +27,6 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['insumeter.herokuapp.com', 'localhost', 'hilaryk.pythonanywhere.com']
 
-
 # Application definition
 
 INSTALLED_APPS = [
