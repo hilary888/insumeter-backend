@@ -285,7 +285,7 @@ def get_day_readings(request, sensor_id, date):
 
 def get_week_readings(request, sensor_id):
     week_time_threshold = timezone.now() - timezone.timedelta(days=7)
-    week_readings = models.Log.objects.filter(sensor_id=sensor_id, timestamp__gt=week_time_threshold)
+    week_readings = models.Log.objects.filter(sensor_id=sensor_id, timestamp__gt=week_time_threshold).order_by(timestamp)
     # daily_readings = {week_readings.timestamp.date():week_readings.level_reading for reading in week_readings}
     #ls = [week_readings.timestamp for reading in week_readings]
     day_readings = {}
@@ -343,7 +343,7 @@ def get_year_readings(request, sensor_id):
             7: 'July', 8: 'August', 9: 'September',
             10: 'October', 11: 'November', 12: 'December'}
 
-    
+
 
     month_labels = []
     # convert the months from month number to month name
