@@ -16,6 +16,7 @@ urlpatterns = [
     url(r'^users/(?P<pk>[0-9]+)/$', views.UserDetail.as_view()),
     # insumeter/base-stations/<user_id>                 - base stations belonging to a user
     url(r'^base-stations/(?P<user_id>[0-9]+)/$', views.BaseStationList.as_view()),
+    # 
     # insumeter/base-stations/<base_station_id>/        - base station details.
     url(r'^base-station/(?P<pk>B[0-9]+)/$', views.BaseStationDetail.as_view()),
     # insumeter/sensors/<base_id>/                      - sensors belonging to a base_station

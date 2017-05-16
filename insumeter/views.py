@@ -258,7 +258,7 @@ def index(request):
 def get_day_readings(request, sensor_id, date):
     # convert date string into datetime object
     selected_date = datetime.strptime(date, '%Y-%m-%d')
-    day_readings = models.Log.objects.filter(sensor_id=sensor_id, timestamp__contains=selected_date.date())
+    day_readings = models.Log.objects.filter(sensor_id=sensor_id, timestamp__contains=selected_date.date()).order_by('timestamp')
     #print(day_readings.values())
     hour_readings = {}
     for reading in list(day_readings.values()):
@@ -288,6 +288,7 @@ def get_week_readings(request, sensor_id):
     week_readings = models.Log.objects.filter(sensor_id=sensor_id, timestamp__gt=week_time_threshold).order_by('timestamp')
     # daily_readings = {week_readings.timestamp.date():week_readings.level_reading for reading in week_readings}
     #ls = [week_readings.timestamp for reading in week_readings]
+    # print(week_readings.values())
     day_readings = {}
 
     #print(list(week_readings.values()))
@@ -300,7 +301,7 @@ def get_week_readings(request, sensor_id):
         if reading['timestamp'].date() in day_readings:
             day_readings[reading['timestamp'].date()].append(float(reading['level_reading']))
     #print(week_readings.values()[0])
-
+    print(day_readings)
     days = {0: "Sunday", 1:"Monday",
             2: "Tuesday", 3: "Wednesday",
             4: "Thursday", 5: "Friday",
@@ -309,6 +310,7 @@ def get_week_readings(request, sensor_id):
     for day in day_readings.keys():
         #day_labels.append(day.strftime("%d/%m/%y"))
         day_labels.append(days[day.weekday()])
+    # print(day_labels)
 
     week_water_used = []
     # calculate the actual amount of water used
@@ -323,7 +325,7 @@ def get_week_readings(request, sensor_id):
 def get_year_readings(request, sensor_id):
     # 11 months -> 47.7977 weeks
     month_time_threshold = timezone.now() - timezone.timedelta(days=334.584)
-    year_readings = models.Log.objects.filter(sensor_id=sensor_id, timestamp__gt=month_time_threshold)
+    year_readings = models.Log.objects.filter(sensor_id=sensor_id, timestamp__gt=month_time_threshold).order_by('timestamp')
     month_readings = {}
 
     #create dict with empty
@@ -364,10 +366,11 @@ def get_water_used(water_levels):
     """ Determines the amount of water used """
     total = 0
     for index, level in enumerate(water_levels):
-        print(index, level)
+        # print(index, level)
         next = index + 1
         if next < len(water_levels):
             diff = level - water_levels[next]
+            print(diff)
             if diff >= 0:
                 total += diff
     return total

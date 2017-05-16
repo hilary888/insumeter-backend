@@ -30,16 +30,19 @@ class InsumeterUserSerializer(serializers.ModelSerializer):
         # base, sensor, base/user, sensor/base, login/ logoout,  registration,
 
 
-class BaseStationSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = models.BaseStation
-        fields = ('base_id', 'region', 'nickname', 'user')
-
-
 class SensorSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Sensor
         fields = ('sensor_id', 'base_id', 'nickname')
+
+
+class BaseStationSerializer(serializers.ModelSerializer):
+    sensors = SensorSerializer(source="sensor_set", many=True, read_only=True)
+    class Meta:
+        model = models.BaseStation
+        fields = ('base_id', 'region', 'nickname', 'user', 'sensors')
+
+
 
 class TankHeightSerializer(serializers.ModelSerializer):
     class Meta:
