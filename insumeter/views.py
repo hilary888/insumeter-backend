@@ -343,6 +343,10 @@ def get_year_readings(request, sensor_id):
             7: 'July', 8: 'August', 9: 'September',
             10: 'October', 11: 'November', 12: 'December'}
 
+    months2 = {
+    {"Monday"}
+    }
+
     month_labels = []
     # convert the months from month number to month name
     for month in month_readings.keys():
