@@ -343,9 +343,7 @@ def get_year_readings(request, sensor_id):
             7: 'July', 8: 'August', 9: 'September',
             10: 'October', 11: 'November', 12: 'December'}
 
-    months2 = {
-    {"Monday"}
-    }
+    
 
     month_labels = []
     # convert the months from month number to month name
@@ -358,6 +356,7 @@ def get_year_readings(request, sensor_id):
         year_water_used.append(get_water_used(value))
 
     year_response = dict(zip(month_labels, year_water_used))
+    print(year_response)
     return JsonResponse(year_response)
 
 
@@ -365,6 +364,7 @@ def get_water_used(water_levels):
     """ Determines the amount of water used """
     total = 0
     for index, level in enumerate(water_levels):
+        print(level)
         next = index + 1
         if next < len(water_levels):
             diff = level - water_levels[next]
