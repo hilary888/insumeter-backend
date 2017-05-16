@@ -285,7 +285,7 @@ def get_day_readings(request, sensor_id, date):
 
 def get_week_readings(request, sensor_id):
     week_time_threshold = timezone.now() - timezone.timedelta(days=7)
-    week_readings = models.Log.objects.filter(sensor_id=sensor_id, timestamp__gt=week_time_threshold).order_by(timestamp)
+    week_readings = models.Log.objects.filter(sensor_id=sensor_id, timestamp__gt=week_time_threshold).order_by('timestamp')
     # daily_readings = {week_readings.timestamp.date():week_readings.level_reading for reading in week_readings}
     #ls = [week_readings.timestamp for reading in week_readings]
     day_readings = {}
@@ -364,7 +364,7 @@ def get_water_used(water_levels):
     """ Determines the amount of water used """
     total = 0
     for index, level in enumerate(water_levels):
-        print(level)
+        print(index, level)
         next = index + 1
         if next < len(water_levels):
             diff = level - water_levels[next]
