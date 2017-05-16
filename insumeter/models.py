@@ -38,7 +38,7 @@ class Sensor(models.Model):
     base_id = models.ForeignKey(BaseStation, related_name='sensor_set')
     nickname = models.CharField(max_length=100, null=True)
     tank_height = models.DecimalField(max_digits=5, decimal_places=2)
-    
+
     def __str__(self):
         return self.sensor_id
 
@@ -47,7 +47,7 @@ class Sensor(models.Model):
         return str(base_name)
 
 class Log(models.Model):
-    timestamp = models.DateTimeField(auto_now_add=True)
+    timestamp = models.DateTimeField()
     level_reading = models.DecimalField(null=False, decimal_places=2, max_digits=5)
     base_station_id = models.ForeignKey(BaseStation)
     sensor_id = models.ForeignKey(Sensor)
