@@ -104,5 +104,4 @@ ENV/
 wsgi.py
 
 # db file
-db.sqlite
-
+db.sqlite3

@@ -26,6 +26,12 @@ urlpatterns = [
     url(r'^sensor/(?P<pk>S[0-9]+)/$', views.SensorDetail.as_view()),
     # insumeter/get_tank_height/S123456789/
     url(r'get_tank_height/(?P<sensor_id>S[0-9]+)/$', views.TankHeight.as_view()),
+    # get daily water readings
+    url(r'get_day_readings/(?P<sensor_id>S[0-9]+)/(?P<date>\d{4}-\d{2}-\d{2})/$', views.get_day_readings),
+    # get weekly water readings
+    url(r'get_week_readings/(?P<sensor_id>S[0-9]+)/$', views.get_week_readings),
+    # get month readings
+    url(r'get_year_readings/(?P<sensor_id>S[0-9]+)/$', views.get_year_readings),
 ]
 
 urlpatterns = format_suffix_patterns(urlpatterns)

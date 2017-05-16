@@ -8,12 +8,14 @@ from insumeter import serializers
 import datetime
 from django.http import Http404
 from rest_framework.permissions import IsAuthenticated
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
+from datetime import datetime
 
 class LogList(APIView):
     """
     List all logs, or create a new entry
     """
+    alert_time_diff = False
     def format_time_db(self, time_string):
         time = "20" + time_string
         time = time.replace('/', '-')
@@ -31,17 +33,26 @@ class LogList(APIView):
         serializer = serializers.LogSerializer(data=request.data)
         time = request.data['timestamp']
         print(time)
-        time = datetime.datetime.strptime(self.format_time_db(time),
+        time = datetime.strptime(self.format_time_db(time),
                     "%Y-%m-%d %H:%M:%S")
-        request.data['timestamp'] = time
-        print(request.data['timestamp'])
+        #request.data['timestamp'] = time
+
+
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            if str(request.data['timestamp'])[:-5] == str(time)[:5]:
+                print(request.data['timestamp'])
+                print(time)
+                return HttpResponse("success")
+            else:
+                cur_time = current_datetime()
+                return HttpResponse(cur_time)
+                #return Response(serializer.data, status=status.HTTP_201_CREATED)
             #return HttpResponse("1")
         #return HttpResponse("0")
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         # TODO cannot post if base_id or sensor_id is non-existent. Is this ok?
+
 
 
 class UserLogs(APIView):
@@ -216,7 +227,7 @@ class TankHeight(APIView):
         serializer = serializers.TankHeightSerializer(sensor)
         return Response(serializer.data)
 
-        
+
 def current_datetime():
     """ () -> DateTime
 
@@ -243,3 +254,116 @@ def cur_time(request):
 
 def index(request):
     return render(request, 'insumeter/index.html')
+
+def get_day_readings(request, sensor_id, date):
+    # convert date string into datetime object
+    selected_date = datetime.strptime(date, '%Y-%m-%d')
+    day_readings = models.Log.objects.filter(sensor_id=sensor_id, timestamp__contains=selected_date.date())
+    #print(day_readings.values())
+    hour_readings = {}
+    for reading in list(day_readings.values()):
+        hour_readings[reading['timestamp'].hour] = []
+
+    for reading in list(day_readings.values()):
+        if reading['timestamp'].hour in hour_readings:
+            hour_readings[reading['timestamp'].hour].append(float(reading['level_reading']))
+
+    hour_water_used = []
+    for key, value in hour_readings.items():
+        hour_water_used.append(get_water_used(value))
+
+    hour_labels = []
+    for hour in hour_readings.keys():
+        hour_labels.append(hour)
+
+    hour_response = dict(zip(hour_labels, hour_water_used))
+    return JsonResponse(hour_response)
+    #print(hour_readings)
+    #return JsonResponse(day_readings.values(), safe=False)
+    #return HttpResponse("sth")
+
+
+def get_week_readings(request, sensor_id):
+    week_time_threshold = timezone.now() - timezone.timedelta(days=7)
+    week_readings = models.Log.objects.filter(sensor_id=sensor_id, timestamp__gt=week_time_threshold)
+    # daily_readings = {week_readings.timestamp.date():week_readings.level_reading for reading in week_readings}
+    #ls = [week_readings.timestamp for reading in week_readings]
+    day_readings = {}
+
+    #print(list(week_readings.values()))
+    for reading in list(week_readings.values()):
+        #print(reading['timestamp'].date())
+        day_readings[reading['timestamp'].date()] = []
+    print(day_readings)
+
+    for reading in list(week_readings.values()):
+        if reading['timestamp'].date() in day_readings:
+            day_readings[reading['timestamp'].date()].append(float(reading['level_reading']))
+    #print(week_readings.values()[0])
+
+    days = {0: "Sunday", 1:"Monday",
+            2: "Tuesday", 3: "Wednesday",
+            4: "Thursday", 5: "Friday",
+            6: "Saturday"}
+    day_labels = []
+    for day in day_readings.keys():
+        #day_labels.append(day.strftime("%d/%m/%y"))
+        day_labels.append(days[day.weekday()])
+
+    week_water_used = []
+    # calculate the actual amount of water used
+    for key, value in day_readings.items():
+        week_water_used.append(get_water_used(value))
+    #print(week_water_used)
+    #print(day_labels)
+    week_response = dict(zip(day_labels, week_water_used))
+    return JsonResponse(week_response)
+
+
+def get_year_readings(request, sensor_id):
+    # 11 months -> 47.7977 weeks
+    month_time_threshold = timezone.now() - timezone.timedelta(days=334.584)
+    year_readings = models.Log.objects.filter(sensor_id=sensor_id, timestamp__gt=month_time_threshold)
+    month_readings = {}
+
+    #create dict with empty
+    for reading in list(year_readings.values()):
+        #print(reading['timestamp'].month)
+        month_readings[reading['timestamp'].month] = []
+
+    #print(reading['timestamp'].month)
+    #print(type(month_readings.values()))
+
+    for reading in list(year_readings.values()):
+        if reading['timestamp'].month in month_readings.keys():
+            month_readings[reading['timestamp'].month].append(float(reading['level_reading']))
+
+    months = {1: 'January', 2: 'February', 3: 'March',
+            4: 'April', 5: 'May', 6: 'June',
+            7: 'July', 8: 'August', 9: 'September',
+            10: 'October', 11: 'November', 12: 'December'}
+
+    month_labels = []
+    # convert the months from month number to month name
+    for month in month_readings.keys():
+        month_labels.append(months[month])
+
+    year_water_used = []
+    # calculate the actual amount of water used
+    for key, value in month_readings.items():
+        year_water_used.append(get_water_used(value))
+
+    year_response = dict(zip(month_labels, year_water_used))
+    return JsonResponse(year_response)
+
+
+def get_water_used(water_levels):
+    """ Determines the amount of water used """
+    total = 0
+    for index, level in enumerate(water_levels):
+        next = index + 1
+        if next < len(water_levels):
+            diff = level - water_levels[next]
+            if diff >= 0:
+                total += diff
+    return total
