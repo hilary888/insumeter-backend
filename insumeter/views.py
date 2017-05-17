@@ -375,5 +375,3 @@ def get_water_used(water_levels):
             if diff >= 0:
                 total += diff
     return total
-
-def send_email_report
