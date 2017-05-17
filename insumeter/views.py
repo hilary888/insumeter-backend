@@ -10,6 +10,8 @@ from django.http import Http404
 from rest_framework.permissions import IsAuthenticated
 from django.http import HttpResponse, JsonResponse
 from datetime import datetime
+from django.core.mail import send_mail
+
 
 class LogList(APIView):
     """
@@ -65,6 +67,7 @@ class UserLogs(APIView):
         serializer = serializers.LogSerializer(logs, many=True)
         return Response(serializer.data)
 
+
 class UserSensors(APIView):
     """
     List all sensors belonging to a given user
@@ -93,7 +96,6 @@ class UserList(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-
 class UserDetail(APIView):
     """
     Retrieve, update, or delete
@@ -116,7 +118,6 @@ class UserDetail(APIView):
         user = get_object_or_404(models.InsumeterUser, id=pk)
         user.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
-
 
 
 class BaseStationList(APIView):
@@ -374,3 +375,5 @@ def get_water_used(water_levels):
             if diff >= 0:
                 total += diff
     return total
+
+def send_email_report
