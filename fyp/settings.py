@@ -68,7 +68,8 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'fyp.wsgi.application'
+# Uncomment and edit to point to WSGI script unless running locally
+# WSGI_APPLICATION = 'fyp.wsgi.application'
 
 
 # Database
